@@ -1,0 +1,47 @@
+# requirements.txt
+# Last updated: April 2026
+# Compatible with Python 3.10, PyTorch 2.3.1 CPU, FastAPI 0.111
+
+# === PyTorch Ecosystem (CPU-Only) ===
+# -f flag MUST come before the packages that need it
+-f https://download.pytorch.org/whl/torch_stable.html
+torch==2.3.1+cpu
+torchvision==0.18.1+cpu
+torchaudio==2.3.1+cpu
+
+# === Transformers & Embeddings ===
+# sentence-transformers 3.0.1 requires transformers>=4.38.0
+sentence-transformers==3.0.1
+transformers==4.41.2
+
+tokenizers==0.19.1
+safetensors==0.4.3
+huggingface-hub==0.23.4
+datasets==2.19.0
+
+# === Vector Database ===
+qdrant-client==1.9.1
+grpcio==1.62.1  # Required by qdrant-client for gRPC support
+
+# === API Framework ===
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+pydantic==2.7.1
+pydantic-settings==2.2.1
+python-multipart==0.0.9
+
+# === LLM Client ===
+groq==0.9.0
+httpx==0.27.0  # Required by groq for async requests
+
+# === Utilities ===
+python-dotenv==1.0.1
+loguru==0.7.2
+tqdm==4.66.4
+numpy==1.26.3
+aiofiles==23.2.0
+
+# === Optional: Testing & Debugging ===
+# pytest==8.1.1
+# pytest-asyncio==0.23.6
+# httpx==0.27.0  # For API integration tests
