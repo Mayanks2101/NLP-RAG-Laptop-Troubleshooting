@@ -11,6 +11,7 @@ torchaudio==2.3.1+cpu
 
 # === Transformers & Embeddings ===
 # sentence-transformers 3.0.1 requires transformers>=4.38.0
+# CrossEncoder (for BAAI/bge-reranker-base reranker) is also part of sentence-transformers
 sentence-transformers==3.0.1
 transformers==4.41.2
 

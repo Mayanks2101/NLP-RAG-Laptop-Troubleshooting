@@ -17,17 +17,24 @@ from src.utils.timer import timing, timer, format_duration
 from src.api.models import (
     QueryRequest, QueryResponse, IngestRequest, IngestResponse,
     HealthResponse, StatsResponse, ResetRequest, ResetResponse,
-    QueryDebugResponse, ErrorResponse
+    QueryDebugResponse, ErrorResponse,
+    AdvancedQueryRequest, AdvancedQueryResponse, AdvancedQueryDebugResponse,
+    ClearHistoryResponse,
 )
 from src.api.dependencies import (
     get_embedding_model_dep, get_qdrant_client_dep, get_groq_client_dep,
-    check_qdrant_health, check_groq_health
+    check_qdrant_health, check_groq_health, get_reranker_dep,
 )
 
 from src.retrieval.retriever import Retriever
+from src.retrieval.multi_retriever import MultiQueryRetriever
+from src.retrieval.query_generator import QueryGenerator
+from src.retrieval.reranker import Reranker
 from src.generation.llm_client import GroqLLMClient
 from src.generation.qa_chain import QAPipeline
+from src.generation.advanced_qa_chain import AdvancedQAPipeline
 from src.generation.prompt_templates import FALLBACK_RESPONSE
+from src.memory.conversation_memory import memory_store
 
 from src.ingestion.embedder import TextEmbedder
 from src.ingestion.indexer import VectorIndexer
@@ -240,3 +247,138 @@ async def reset_database(
     except Exception as e:
         logger.error(f"❌ Reset failed: {e}")
         raise HTTPException(status_code=400, detail=f"Reset error: {str(e)}")
+
+
+# ===========================================================================
+# Advanced RAG Endpoints (Multi-Query + Reranking + Memory)
+# ===========================================================================
+
+@router.post("/advanced_query", response_model=AdvancedQueryResponse)
+@timing
+async def advanced_query_endpoint(
+    request: AdvancedQueryRequest,
+    qdrant_client: QdrantClient = Depends(get_qdrant_client_dep),
+    embedding_model: SentenceTransformer = Depends(get_embedding_model_dep),
+    groq_client: Groq = Depends(get_groq_client_dep),
+    reranker: Reranker = Depends(get_reranker_dep),
+):
+    """
+    Advanced RAG endpoint with multi-query expansion, cross-encoder reranking,
+    and optional conversation memory.
+
+    Pipeline:
+        History + Question → LLM generates N queries
+        → Parallel Qdrant search for each query
+        → Union + Deduplicate results
+        → Cross-Encoder rerank → top-K chunks
+        → Final LLM (History + all queries + reranked chunks)
+        → Save turn to memory (if session_id provided)
+
+    Pass a `session_id` UUID to enable multi-turn conversation memory.
+    Omit it (or pass null) for stateless single-turn queries.
+    """
+    logger.info(
+        "🚀 Advanced query | session='{}' | question='{}'...",
+        (request.session_id or "stateless")[:8],
+        request.question[:60],
+    )
+
+    try:
+        multi_retriever = MultiQueryRetriever(qdrant_client, embedding_model)
+        query_generator = QueryGenerator(groq_client)
+        llm_client      = GroqLLMClient(groq_client)
+        pipeline        = AdvancedQAPipeline(
+            multi_retriever=multi_retriever,
+            query_generator=query_generator,
+            reranker=reranker,
+            llm_client=llm_client,
+        )
+
+        result = pipeline.process(
+            question=request.question,
+            session_id=request.session_id,
+        )
+
+        return AdvancedQueryResponse(
+            question=request.question,
+            answer=result["answer"],
+            generated_queries=result["generated_queries"],
+            chunks_used=result["chunks_used"],
+            processing_time_seconds=result["processing_time_seconds"],
+            session_id=result["session_id"],
+            turn_number=result["turn_number"],
+        )
+
+    except Exception as e:
+        logger.error("❌ Advanced query failed: {}", str(e))
+        raise HTTPException(status_code=500, detail=f"Advanced query error: {str(e)}")
+
+
+@router.post("/advanced_query_debug", response_model=AdvancedQueryDebugResponse)
+@timing
+async def advanced_query_debug_endpoint(
+    request: AdvancedQueryRequest,
+    qdrant_client: QdrantClient = Depends(get_qdrant_client_dep),
+    embedding_model: SentenceTransformer = Depends(get_embedding_model_dep),
+    groq_client: Groq = Depends(get_groq_client_dep),
+    reranker: Reranker = Depends(get_reranker_dep),
+):
+    """
+    Same as /advanced_query but includes the raw reranked chunks in the response
+    (text, source, bi-encoder score, reranker_score) for inspection and debugging.
+    Memory is NOT saved on debug calls to avoid polluting conversation history.
+    """
+    try:
+        multi_retriever = MultiQueryRetriever(qdrant_client, embedding_model)
+        query_generator = QueryGenerator(groq_client)
+        llm_client      = GroqLLMClient(groq_client)
+        pipeline        = AdvancedQAPipeline(
+            multi_retriever=multi_retriever,
+            query_generator=query_generator,
+            reranker=reranker,
+            llm_client=llm_client,
+        )
+
+        # Run stateless (no session_id) so debug calls don't pollute memory
+        result = pipeline.process(
+            question=request.question,
+            session_id=None,
+        )
+
+        return AdvancedQueryDebugResponse(
+            question=request.question,
+            answer=result["answer"],
+            generated_queries=result["generated_queries"],
+            chunks_used=result["chunks_used"],
+            processing_time_seconds=result["processing_time_seconds"],
+            session_id=None,
+            turn_number=1,
+            retrieved_contexts=result["retrieved_contexts"],
+        )
+
+    except Exception as e:
+        logger.error("❌ Advanced debug query failed: {}", str(e))
+        raise HTTPException(status_code=500, detail=f"Debug query error: {str(e)}")
+
+
+@router.delete("/session/{session_id}", response_model=ClearHistoryResponse)
+async def clear_session_history(session_id: str):
+    """
+    Clear conversation history for a specific session.
+
+    Use this when the user wants to start a fresh conversation
+    without changing their session_id.
+    """
+    cleared = memory_store.clear(session_id)
+    if cleared:
+        return ClearHistoryResponse(
+            status="cleared",
+            session_id=session_id,
+            message=f"Conversation history for session '{session_id}' has been cleared.",
+        )
+    else:
+        return ClearHistoryResponse(
+            status="not_found",
+            session_id=session_id,
+            message=f"No history found for session '{session_id}'.",
+        )

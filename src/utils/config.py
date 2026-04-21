@@ -77,13 +77,39 @@ class Settings(BaseSettings):
     TOP_K: int = Field(
         default=5,
         ge=1,  # Greater than or equal to 1
-        description="Number of chunks to retrieve for answering questions"
+        description="Number of chunks to retrieve per query in advanced pipeline"
     )
     SCORE_THRESHOLD: float = Field(
         default=0.7,
         ge=0.0,
         le=1.0,
         description="Minimum similarity score (0-1) to include a result"
+    )
+
+    # === Advanced RAG: Multi-Query Settings ===
+    NUM_QUERIES: int = Field(
+        default=3,
+        ge=1,
+        le=6,
+        description="Number of alternative queries generated from the original question"
+    )
+
+    # === Advanced RAG: Reranker Settings ===
+    RERANKER_MODEL: str = Field(
+        default="BAAI/bge-reranker-base",
+        description="Cross-Encoder model for reranking retrieved chunks"
+    )
+    RERANKER_TOP_K: int = Field(
+        default=4,
+        ge=1,
+        description="Number of top chunks to keep AFTER reranking (fed to final LLM)"
+    )
+
+    # === Advanced RAG: Conversation Memory ===
+    MAX_HISTORY_TURNS: int = Field(
+        default=6,
+        ge=1,
+        description="Max (user, assistant) turns to keep in conversation history (older turns are dropped)"
     )
     
     # === LLM Generation Settings ===

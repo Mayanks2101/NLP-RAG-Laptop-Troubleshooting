@@ -26,6 +26,7 @@ from groq import Groq
 
 from src.utils.config import settings
 from src.utils.logger import get_logger
+from src.retrieval.reranker import Reranker
 
 logger = get_logger(__name__)
 
@@ -36,6 +37,7 @@ logger = get_logger(__name__)
 _embedding_model: Optional[SentenceTransformer] = None
 _qdrant_client: Optional[QdrantClient] = None
 _groq_client: Optional[Groq] = None
+_reranker: Optional[Reranker] = None
 
 
 def get_embedding_model() -> SentenceTransformer:
@@ -120,6 +122,29 @@ def get_qdrant_client_dep() -> QdrantClient:
 def get_groq_client_dep() -> Groq:
     """FastAPI dependency wrapper for Groq client"""
     return get_groq_client()
+
+
+def get_reranker() -> Reranker:
+    """
+    Get or create the Cross-Encoder reranker instance.
+
+    Loaded lazily on first request to /advanced_query so that the server
+    starts fast and the model is only loaded if the advanced endpoint is used.
+
+    Returns:
+        Reranker instance backed by BAAI/bge-reranker-base
+    """
+    global _reranker
+    if _reranker is None:
+        logger.info(f"Loading reranker model: {settings.RERANKER_MODEL}")
+        _reranker = Reranker(model_name=settings.RERANKER_MODEL)
+        logger.info("✓ Reranker loaded successfully")
+    return _reranker
+
+
+def get_reranker_dep() -> Reranker:
+    """FastAPI dependency wrapper for the Cross-Encoder reranker"""
+    return get_reranker()
 
 
 def check_qdrant_health(client: QdrantClient = Depends(get_qdrant_client_dep)) -> dict:
