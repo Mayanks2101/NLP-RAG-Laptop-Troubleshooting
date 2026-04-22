@@ -1,0 +1,340 @@
+@import "tailwindcss";
+
+/* ===================================================================
+   Design Tokens — Dark & Light Theme
+   =================================================================== */
+
+:root {
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* Animations */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Spacing */
+  --sidebar-width: 300px;
+  --debug-panel-width: 440px;
+  --header-height: 56px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+}
+
+/* ── Dark Theme (default) — Neon Cyan & Black ────────────────── */
+[data-theme="dark"] {
+  /* Glassmorphism Variables for Neon/Black Theme */
+  --bg-primary: #000000;
+  --bg-secondary: rgba(10, 10, 10, 0.65);
+  --bg-tertiary: rgba(17, 17, 17, 0.65);
+  --bg-surface: rgba(20, 20, 20, 0.6);
+  --bg-hover: rgba(40, 40, 40, 0.7);
+  --bg-chat: transparent;
+  --bg-panel: rgba(0, 0, 0, 0.75);
+
+  --bg-bubble-user: rgba(30, 30, 30, 0.7);
+  --bg-bubble-assistant: transparent;
+
+  --logo-color: var(--gold);
+  --logo-glow: 0 0 8px rgba(6, 182, 212, 0.3), 0 0 15px rgba(6, 182, 212, 0.15);
+  --brand-bg: linear-gradient(135deg, #06b6d4, #22d3ee, #00ffcc);
+  --brand-stroke: #ffffff;
+
+  --text-primary: #fcfcfc;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  --text-inverse: #000000;
+  --text-bubble-user: #fcfcfc;
+
+  --accent: #06b6d4;
+  --accent-hover: #22d3ee;
+  --accent-muted: rgba(6, 182, 212, 0.15);
+  --accent-glow: rgba(6, 182, 212, 0.4);
+
+  --gold: #33ffcc;
+  --gold-light: #5eead4;
+  --gold-muted: rgba(0, 255, 204, 0.15);
+
+  --border: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+
+  --glass-blur: blur(16px);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.6);
+  --shadow-bubble: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+
+  --scrollbar-track: #0a0a0a;
+  --scrollbar-thumb: #27272a;
+  --scrollbar-thumb-hover: #3f3f46;
+
+  color-scheme: dark;
+}
+
+/* ── Light Theme — Vibrant Cyan & Indigo Glass ──────────────────────────── */
+[data-theme="light"] {
+  --bg-primary: #f0fdfa;
+  --bg-secondary: rgba(255, 255, 255, 0.5);
+  --bg-tertiary: rgba(240, 253, 250, 0.6);
+  --bg-surface: rgba(255, 255, 255, 0.65);
+  --bg-hover: rgba(134, 239, 172, 0.2);
+  --bg-chat: transparent;
+  --bg-panel: #ffffff;
+
+  --bg-bubble-user: rgba(204, 251, 241, 0.85); /* cyan 100 */
+  --bg-bubble-assistant: transparent;
+
+  --logo-color: var(--gold);
+  --logo-glow: 0 0 6px rgba(2, 132, 199, 0.4), 0 0 15px rgba(2, 132, 199, 0.2);
+  --brand-bg: #ffffff;
+  --brand-stroke: #0284c7;
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --text-inverse: #ffffff;
+  --text-bubble-user: #0f172a;
+
+  --accent: #0284c7;
+  --accent-hover: #0369a1;
+  --accent-muted: rgba(2, 132, 199, 0.15);
+  --accent-glow: rgba(2, 132, 199, 0.3);
+
+  --gold: #10b981;
+  --gold-light: #34d399;
+  --gold-muted: rgba(16, 185, 129, 0.15);
+
+  --border: rgba(2, 132, 199, 0.2);
+  --border-subtle: rgba(2, 132, 199, 0.1);
+
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #e11d48;
+
+  --shadow-sm: 0 1px 2px rgba(2, 132, 199, 0.05);
+  --shadow-md: 0 4px 12px rgba(2, 132, 199, 0.1);
+  --shadow-lg: 0 8px 30px rgba(2, 132, 199, 0.15);
+  --glass-blur: blur(16px);
+  --glass-border: 1px solid rgba(2, 132, 199, 0.12);
+
+  --scrollbar-track: #f4f4f5;
+  --scrollbar-thumb: #d4d4d8;
+  --scrollbar-thumb-hover: #a1a1aa;
+
+  color-scheme: light;
+}
+
+/* ===================================================================
+   Global Reset & Base
+   =================================================================== */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-primary);
+  background-image: radial-gradient(ellipse at 50% -20%, rgba(6, 182, 212, 0.25), transparent 60%),
+                    radial-gradient(ellipse at 100% 100%, rgba(0, 255, 204, 0.12), transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow: hidden;
+  transition: background var(--transition-base), color var(--transition-base);
+}
+
+#root {
+  height: 100vh;
+  display: flex;
+}
+
+::selection {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+/* ===================================================================
+   Scrollbar Styling
+   =================================================================== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* ===================================================================
+   Utility Animations
+   =================================================================== */
+
+@keyframes pulse-dot {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 0 8px transparent; }
+}
+
+/* ===================================================================
+   Markdown Content Styling (inside assistant bubbles)
+   =================================================================== */
+
+.markdown-content {
+  font-size: 0.9rem;
+  line-height: 1.75;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.markdown-content p {
+  margin-bottom: 0.75em;
+}
+.markdown-content p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-content h1, .markdown-content h2, .markdown-content h3 {
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+.markdown-content h1 { font-size: 1.25rem; }
+.markdown-content h2 { font-size: 1.1rem; }
+.markdown-content h3 { font-size: 1rem; }
+
+.markdown-content ul, .markdown-content ol {
+  padding-left: 1.5em;
+  margin-bottom: 0.75em;
+}
+.markdown-content li {
+  margin-bottom: 0.35em;
+}
+.markdown-content li::marker {
+  color: var(--text-tertiary);
+}
+
+.markdown-content code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  color: var(--accent-hover);
+}
+
+.markdown-content pre {
+  margin: 0.75em 0;
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+}
+.markdown-content pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+.markdown-content strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markdown-content em {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.markdown-content blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 1em;
+  margin: 0.75em 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.markdown-content a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.markdown-content a:hover {
+  color: var(--accent-hover);
+}
+
+.markdown-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1em 0;
+}
+
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75em 0;
+  font-size: 0.85rem;
+}
+.markdown-content th, .markdown-content td {
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.markdown-content th {
+  background: var(--bg-hover);
+  font-weight: 600;
+}
