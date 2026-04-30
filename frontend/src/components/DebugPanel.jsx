@@ -96,7 +96,7 @@ export default function DebugPanel() {
       try {
         const result = await sendDebugQuery(
           lastDebugData.question,
-          null // Stateless to not pollute memory
+          activeChat?.sessionId ?? null  // Pass session_id for conversation context
         );
         setFullDebugData(result);
       } catch (err) {

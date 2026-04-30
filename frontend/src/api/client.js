@@ -26,9 +26,11 @@ async function request(url, options = {}) {
 export async function sendQuery(question, sessionId = null) {
   try {
     // Try advanced endpoint first (multi-query + reranking + memory)
+    const payload = { question, session_id: sessionId ?? null };
+    console.debug('[api] sendQuery payload ->', payload);
     const result = await request(`${BASE}/advanced_query`, {
       method: 'POST',
-      body: JSON.stringify({ question, session_id: sessionId }),
+      body: JSON.stringify(payload),
     });
     return result;
   } catch (err) {
@@ -58,9 +60,11 @@ export async function sendQuery(question, sessionId = null) {
  */
 export async function sendDebugQuery(question, sessionId = null) {
   try {
+    const payload = { question, session_id: sessionId ?? null };
+    console.debug('[api] sendDebugQuery payload ->', payload);
     return await request(`${BASE}/advanced_query_debug`, {
       method: 'POST',
-      body: JSON.stringify({ question, session_id: sessionId }),
+      body: JSON.stringify(payload),
     });
   } catch (err) {
     if (err.message.includes('Not Found') || err.message.includes('404')) {

@@ -34,19 +34,16 @@ export function useSidebarAnimation(containerRef, deps = []) {
 export function useMessageAnimation(ref) {
   useEffect(() => {
     if (!ref.current) return;
+    // Animate immediately on mount — no ScrollTrigger so it always fires
+    // (ScrollTrigger could miss newly-appended messages and leave them at opacity:0)
     gsap.fromTo(
       ref.current,
       { opacity: 0, y: 25 },
-      { 
-        opacity: 1, 
-        y: 0, 
-        duration: 0.45, 
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.45,
         ease: 'power3.out',
-        scrollTrigger: {
-          trigger: ref.current,
-          start: 'top 95%', // triggers when the top of the bubble is 95% down the viewport
-          toggleActions: 'play none none none',
-        }
       }
     );
   }, [ref]);
