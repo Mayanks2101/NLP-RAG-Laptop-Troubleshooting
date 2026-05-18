@@ -127,6 +127,17 @@ class AdvancedQAPipeline:
             queries=all_queries,
             top_k_per_query=settings.TOP_K,
         )
+        """
+         output of candidate_chunk is List[Dict] with keys: 
+        [
+           {
+                "chunk_text": "...", 
+                "source_doc": "...",
+                "similarity_score": ...,
+                "retrieved_by_query": "..."
+            }
+        ]
+        """
 
         # ── Step 3: Graceful fallback if nothing retrieved ───────────────────
         if not candidate_chunks:

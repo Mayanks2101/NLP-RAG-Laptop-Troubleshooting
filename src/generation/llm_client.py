@@ -89,3 +89,15 @@ class GroqLLMClient:
         # Fallback (should never reach here due to raises above)
         logger.warning("LLM generation returned empty after retries")
         return ""
+    
+
+# Expected response format:
+# response = {
+#     "choices": [
+#         {
+#             "message": {
+#                 "content": "Generated answer string"
+#             }
+#         }
+#     ]
+# }
